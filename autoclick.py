@@ -1,0 +1,95 @@
+import getopt
+import getpass
+import signal
+from sys import argv
+from datetime import datetime
+from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
+
+def sig_int(signal, frame):
+	print('quiting...')
+	driver.quit()
+	exit()
+
+def setup():
+	helpmsg = '''autoclick.py - a python script that answers multiple choices questions automatically on irs.zuvio.com.tw
+Usage: python3 autoclick.py [url] [-n seconds]
+Author: Andy Chen
+
+Options:
+  -n  SECONDS        refresh the website every SECONDS seconds (default: 3)'''
+	sec = 3
+	try:
+		opts, args = getopt.getopt(argv[1:], "n:", ["help"])
+		for opt, arg in opts:
+			if opt == '--help':
+				print(helpmsg)
+				exit()
+			elif opt == '-n':
+				sec = arg
+	except getopt.GetoptError:
+		print(helpmsg)
+		exit(1)
+	
+	if len(args) > 1:
+		print('Error: too many urls')
+		print(helpmsg)
+		exit(2)
+	elif len(args) < 1:
+		print('Error: missing the url')
+		print(helpmsg)
+		exit(3)
+	return sec,args[0]
+
+
+sec, url = setup()
+
+email = input('Enter your email: ')
+password = getpass.getpass()
+
+options = webdriver.ChromeOptions()
+options.add_argument('--headless') #hide the browser window
+driver = webdriver.Chrome(chrome_options= options)
+
+driver.get(url)
+signal.signal(signal.SIGINT, sig_int)
+
+login = False
+while not login:
+	driver.find_element_by_id('email').send_keys(email)
+	driver.find_element_by_id('password').send_keys(password)
+	driver.find_element_by_id('login_btn').click()
+	driver.implicitly_wait(1)
+	try:
+		driver.find_element_by_id('login_btn')
+	except NoSuchElementException: #if it does not exist the login button, which means you have logged in
+		login=True
+	else:
+		print('Wrong email or password. Please try again.')
+		email = input('Enter your email: ')
+		password = getpass.getpass()
+
+del password
+print('Logged in successfully')
+driver.get(url)
+
+while True:
+	driver.implicitly_wait(sec)
+	driver.refresh()
+
+	#find some available questions
+	questions_n = len(driver.find_elements_by_class_name("i-c-l-q-question-box"))
+	if questions_n > 0:
+		for i in range(questions_n):
+			q = driver.find_elements_by_class_name('i-c-l-q-question-box')[i]
+			if q.find_element_by_class_name('i-c-l-q-q-b-t-t-b-text').text == u'單選題':
+				try:
+					q.find_element_by_class_name('i-c-l-q-q-b-b-mini-box-gray') #choose the unanswered question
+					q.click()
+					driver.find_element_by_class_name('i-a-c-q-t-q-b-b-b-o-b-text').click() #click the first option
+					driver.find_element_by_class_name('i-a-c-f-b-submit-btn').click() #click 'confirm'
+					print('{{{'+str(datetime.now().time())[:8]+'}}} answered a question successfully')
+					driver.get(url)
+				except NoSuchElementException: #if there are no unanswered questions
+					pass
+			
