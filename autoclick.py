@@ -2,6 +2,7 @@ import getopt
 import getpass
 import signal
 from sys import argv
+from random import randint
 from datetime import datetime
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -86,9 +87,11 @@ while True:
 				try:
 					q.find_element_by_class_name('i-c-l-q-q-b-b-mini-box-gray') #choose the unanswered question
 					q.click()
-					driver.find_element_by_class_name('i-a-c-q-t-q-b-b-b-o-b-text').click() #click the first option
+					option_list=driver.find_elements_by_class_name('i-a-c-q-t-q-b-b-b-o-b-text')
+					chose_option=randint(0,len(option_list)-1)
+					option_list[chose_option].click() #click the random option
 					driver.find_element_by_class_name('i-a-c-f-b-submit-btn').click() #click 'confirm'
-					print('{{{'+str(datetime.now().time())[:8]+'}}} answered a question successfully')
+					print('{{{'+str(datetime.now().time())[:8]+'}}} answered','ABCD'[chose_option], 'to a question successfully')
 					driver.get(url)
 				except NoSuchElementException: #if there are no unanswered questions
 					pass
