@@ -91,7 +91,7 @@ while True:
 					chose_option=randint(0,len(option_list)-1)
 					option_list[chose_option].click() #click the random option
 					driver.find_element_by_class_name('i-a-c-f-b-submit-btn').click() #click 'confirm'
-					print('{{{'+str(datetime.now().time())[:8]+'}}} answered','ABCD'[chose_option], 'to a question successfully')
+					print('{{{'+str(datetime.now().time())[:8]+'}}} answered',chose_option+1, 'to a question successfully')
 					driver.get(url)
 				except NoSuchElementException: #if there are no unanswered questions
 					pass
