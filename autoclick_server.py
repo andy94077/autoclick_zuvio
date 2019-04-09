@@ -44,10 +44,10 @@ Options:
 		print('Error: missing the url')
 		print(helpmsg)
 		exit(3)
-	return sec,args[0]
+	return sec, need_sign_in, args[0]
 
 
-sec, url = setup()
+sec, need_sign_in, url = setup()
 
 email = input('Enter your email: ')
 password = getpass.getpass()
