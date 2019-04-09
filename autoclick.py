@@ -20,14 +20,17 @@ Author: Andy Chen
 Options:
   -n  SECONDS        refresh the website every SECONDS seconds (default: 3)'''
 	sec = 3
+	need_sign_in = True
 	try:
-		opts, args = getopt.getopt(argv[1:], "n:", ["help"])
+		opts, args = getopt.getopt(argv[1:], 'n:', ['help','no-sign-in'])
 		for opt, arg in opts:
 			if opt == '--help':
 				print(helpmsg)
 				exit()
 			elif opt == '-n':
 				sec = arg
+			elif opt == '--no-sign-in':
+				need_sign_in = False
 	except getopt.GetoptError:
 		print(helpmsg)
 		exit(1)
@@ -40,10 +43,10 @@ Options:
 		print('Error: missing the url')
 		print(helpmsg)
 		exit(3)
-	return sec,args[0]
+	return sec,need_sign_in,args[0]
 
 
-sec, url = setup()
+sec, need_sign_in, url = setup()
 
 email = input('Enter your email: ')
 password = getpass.getpass()
@@ -74,10 +77,22 @@ del password
 print('Logged in successfully')
 driver.get(url)
 
+signed_in = not need_sign_in
+sign_in_url=url.replace('clickers','rollcall')
 while True:
-	driver.implicitly_wait(sec)
-	driver.refresh()
+	if not signed_in:
+		driver.get(sign_in_url)
+		driver.implicitly_wait(sec)
+		try:
+			driver.find_element_by_id('submit-make-rollcall').click()
+			print('{{{'+str(datetime.now().time())[:8]+'}}} signed in')
+			signed_in = True
+			driver.get(url)
+		except NoSuchElementException:
+			pass
 
+	driver.refresh()
+	driver.implicitly_wait(sec)
 	#find some available questions
 	questions_n = len(driver.find_elements_by_class_name("i-c-l-q-question-box"))
 	if questions_n > 0:
