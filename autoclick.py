@@ -18,7 +18,8 @@ Usage: python3 autoclick.py [url] [-n seconds]
 Author: Andy Chen
 
 Options:
-  -n  SECONDS        refresh the website every SECONDS seconds (default: 3)'''
+  -n  SECONDS        refresh the website every SECONDS seconds (default: 3)
+  --no-sign-in       the script will not try to sign in the course'''
 	sec = 3
 	need_sign_in = True
 	try:
