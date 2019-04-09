@@ -4,6 +4,7 @@ import signal
 from sys import argv
 from random import randint
 from datetime import datetime
+from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
@@ -48,11 +49,16 @@ sec, url = setup()
 email = input('Enter your email: ')
 password = getpass.getpass()
 
-options = webdriver.ChromeOptions()
-options.add_argument('--headless') #hide the browser window
-driver = webdriver.Chrome(chrome_options= options)
+screen_size=(960,4320)
+display = Display(size=screen_size)
+display.start()
 
-driver.get(url)
+options = webdriver.firefox.options.Options()
+options.add_argument('--headless') #hide the browser window
+driver = webdriver.Firefox(options= options)
+
+driver.set_window_size(*screen_size)
+driver.get('https://irs.zuvio.com.tw')
 signal.signal(signal.SIGINT, sig_int)
 
 login = False
