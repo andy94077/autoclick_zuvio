@@ -1,6 +1,7 @@
 import getopt
 import getpass
 import signal
+import time
 from sys import argv
 from random import randint
 from datetime import datetime
@@ -89,7 +90,7 @@ sign_in_url=url.replace('clickers','rollcall')
 while True:
 	if not signed_in:
 		driver.get(sign_in_url)
-		driver.implicitly_wait(sec)
+		time.sleep(sec)
 		try:
 			driver.find_element_by_id('submit-make-rollcall').click()
 			print('{{{'+str(datetime.now().time())[:8]+'}}} signed in')
@@ -99,7 +100,7 @@ while True:
 			pass
 
 	driver.refresh()
-	driver.implicitly_wait(sec)
+	time.sleep(sec)
 
 	#find some available questions
 	questions_n = len(driver.find_elements_by_class_name("i-c-l-q-question-box"))
