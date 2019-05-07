@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import getopt
 import getpass
 import signal
@@ -20,8 +21,8 @@ Usage: python3 autoclick.py [url] [-n seconds]
 Author: Andy Chen
 
 Options:
-  -n  SECONDS        refresh the website every SECONDS seconds (default: 3)
-  --no-sign-in       the script will not try to sign in the course'''
+  -n  SECONDS		 refresh the website every SECONDS seconds (default: 3)
+  --no-sign-in		 the script will not try to sign in the course'''
 	sec = 3
 	need_sign_in = True
 	try:
@@ -98,8 +99,12 @@ while True:
 			driver.get(url)
 		except NoSuchElementException:
 			pass
-
-	driver.refresh()
+	try:
+		driver.refresh()
+	except:
+		print('{{{'+str(datetime.now().time())[:8]+'}}} connection timeout')
+		time.sleep(30)
+		continue
 	time.sleep(sec)
 
 	#find some available questions
