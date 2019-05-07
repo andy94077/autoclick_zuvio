@@ -107,7 +107,7 @@ while True:
 	if questions_n > 0:
 		for i in range(questions_n):
 			q = driver.find_elements_by_class_name('i-c-l-q-question-box')[i]
-			if q.find_element_by_class_name('i-c-l-q-q-b-t-t-b-text').text == u'單選題':
+			if q.find_element_by_class_name('i-c-l-q-q-b-t-t-b-text').text in (u'單選題',u'多選題'):
 				try:
 					q.find_element_by_class_name('i-c-l-q-q-b-b-mini-box-gray') #choose the unanswered question
 					q.click()
