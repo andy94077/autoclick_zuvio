@@ -50,7 +50,7 @@ Options:
 		exit(3)
 	return sec, need_sign_in, args[0]
 
-def login(driver,email,password):
+def login(driver):
 	email = input('Enter your email: ')
 	password = getpass.getpass()
 	logged_in = False
