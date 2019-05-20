@@ -97,6 +97,7 @@ while True:
 			print('{{{'+str(datetime.now().time())[:8]+'}}} signed in')
 			signed_in = True
 			driver.get(url)
+			time.sleep(3)
 		except NoSuchElementException:
 			pass
 	try:

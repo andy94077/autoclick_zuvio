@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 import getopt
 import getpass
 import signal
+import time
 from sys import argv
 from random import randint
 from datetime import datetime
@@ -18,8 +20,8 @@ Usage: python3 autoclick.py [url] [-n seconds]
 Author: Andy Chen
 
 Options:
-  -n  SECONDS        refresh the website every SECONDS seconds (default: 3)
-  --no-sign-in       the script will not try to sign in the course'''
+  -n  SECONDS		 refresh the website every SECONDS seconds (default: 3)
+  --no-sign-in		 the script will not try to sign in the course'''
 	sec = 3
 	need_sign_in = True
 	try:
@@ -83,17 +85,23 @@ sign_in_url=url.replace('clickers','rollcall')
 while True:
 	if not signed_in:
 		driver.get(sign_in_url)
-		driver.implicitly_wait(sec)
+		time.sleep(sec)
 		try:
 			driver.find_element_by_id('submit-make-rollcall').click()
 			print('{{{'+str(datetime.now().time())[:8]+'}}} signed in')
 			signed_in = True
 			driver.get(url)
+			time.sleep(3)
 		except NoSuchElementException:
 			pass
+	try:
+		driver.refresh()
+	except:
+		print('{{{'+str(datetime.now().time())[:8]+'}}} connection timeout')
+		time.sleep(30)
+		continue
+	time.sleep(sec)
 
-	driver.refresh()
-	driver.implicitly_wait(sec)
 	#find some available questions
 	questions_n = len(driver.find_elements_by_class_name("i-c-l-q-question-box"))
 	if questions_n > 0:
