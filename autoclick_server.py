@@ -13,6 +13,7 @@ from selenium.common.exceptions import NoSuchElementException
 def sig_int(signal, frame):
 	print('quiting...')
 	driver.quit()
+	display.stop()
 	exit()
 
 def setup():
