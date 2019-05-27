@@ -14,6 +14,7 @@ from selenium.common.exceptions import NoSuchElementException
 def sig_int(signal, frame):
 	print('quiting...')
 	driver.quit()
+	display.stop()
 	exit()
 
 def setup():
@@ -51,6 +52,7 @@ Options:
 	return sec, need_sign_in, args[0]
 
 def login(driver):
+	driver.get('https://irs.zuvio.com.tw')
 	email = input('Enter your email: ')
 	password = getpass.getpass()
 	logged_in = False
@@ -62,7 +64,7 @@ def login(driver):
 		try:
 			driver.find_element_by_id('login_btn')
 		except NoSuchElementException: #if it does not exist the login button, which means you have logged in
-			login=True
+			logged_in=True
 		else:
 			print('Wrong email or password. Please try again.')
 			email = input('Enter your email: ')
@@ -72,16 +74,15 @@ def login(driver):
 
 sec, need_sign_in, url = setup()
 
-screen_size=(960,4320)
-display = Display(size=screen_size)
-display.start()
-
 options = webdriver.firefox.options.Options()
 options.add_argument('--headless') #hide the browser window
 driver = webdriver.Firefox(options= options)
 
+screen_size=(960,4320)
+display = Display(size=screen_size)
+display.start()
+
 driver.set_window_size(*screen_size)
-driver.get('https://irs.zuvio.com.tw')
 signal.signal(signal.SIGINT, sig_int)
 
 login(driver)
@@ -122,7 +123,7 @@ while True:
 					#check if there is any constraints of the number of answers
 					try:
 						tag = driver.find_element_by_class_name('i-a-c-q-t-q-b-m-b-t-b-tag')
-						opt_num_to_choose=int(re.search('\d+',tag.text[4]).group()) #應選n選項, 最多n選項
+						opt_num_to_choose=int(re.search(r'\d+',tag.text[4]).group()) #應選n選項, 最多n選項
 					except NoSuchElementException:
 						opt_num_to_choose=1
 
