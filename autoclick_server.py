@@ -56,13 +56,13 @@ sec, need_sign_in, url = setup()
 email = input('Enter your email: ')
 password = getpass.getpass()
 
-screen_size=(960,4320)
-display = Display(size=screen_size)
-display.start()
-
 options = webdriver.firefox.options.Options()
 options.add_argument('--headless') #hide the browser window
 driver = webdriver.Firefox(options= options)
+
+screen_size=(960,4320)
+display = Display(size=screen_size)
+display.start()
 
 driver.set_window_size(*screen_size)
 driver.get('https://irs.zuvio.com.tw')
