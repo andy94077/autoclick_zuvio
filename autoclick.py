@@ -3,8 +3,9 @@ import getopt
 import getpass
 import signal
 import time
+import re
 from sys import argv
-from random import randint
+import random
 from datetime import datetime
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -48,36 +49,36 @@ Options:
 		exit(3)
 	return sec,need_sign_in,args[0]
 
+def login(driver):
+	driver.get('https://irs.zuvio.com.tw')
+	email = input('Enter your email: ')
+	password = getpass.getpass()
+	logged_in = False
+	while not logged_in:
+		driver.find_element_by_id('email').send_keys(email)
+		driver.find_element_by_id('password').send_keys(password)
+		driver.find_element_by_id('login_btn').click()
+		driver.implicitly_wait(1)
+		try:
+			driver.find_element_by_id('login_btn')
+		except NoSuchElementException: #if it does not exist the login button, which means you have logged in
+			logged_in=True
+		else:
+			print('Wrong email or password. Please try again.')
+			email = input('Enter your email: ')
+			password = getpass.getpass()
+	print('Logged in successfully')
+
 
 sec, need_sign_in, url = setup()
-
-email = input('Enter your email: ')
-password = getpass.getpass()
 
 options = webdriver.ChromeOptions()
 options.add_argument('--headless') #hide the browser window
 driver = webdriver.Chrome(chrome_options= options)
 
-driver.get(url)
 signal.signal(signal.SIGINT, sig_int)
 
-login = False
-while not login:
-	driver.find_element_by_id('email').send_keys(email)
-	driver.find_element_by_id('password').send_keys(password)
-	driver.find_element_by_id('login_btn').click()
-	driver.implicitly_wait(1)
-	try:
-		driver.find_element_by_id('login_btn')
-	except NoSuchElementException: #if it does not exist the login button, which means you have logged in
-		login=True
-	else:
-		print('Wrong email or password. Please try again.')
-		email = input('Enter your email: ')
-		password = getpass.getpass()
-
-del password
-print('Logged in successfully')
+login(driver)
 driver.get(url)
 
 signed_in = not need_sign_in
@@ -111,11 +112,29 @@ while True:
 				try:
 					q.find_element_by_class_name('i-c-l-q-q-b-b-mini-box-gray') #choose the unanswered question
 					q.click()
+
+					#check if there is any constraints of the number of answers
+					try:
+						tag = driver.find_element_by_class_name('i-a-c-q-t-q-b-m-b-t-b-tag')
+						print(tag.text)
+						opt_num_to_choose=int(re.search(r'\d+',tag.text).group()) #應選n選項, 最多n選項
+					except NoSuchElementException:
+						opt_num_to_choose=1
+
 					option_list=driver.find_elements_by_class_name('i-a-c-q-t-q-b-b-b-o-b-text')
-					chose_option=randint(0,len(option_list)-1)
-					option_list[chose_option].click() #click the random option
+					chosen_option_list = sorted(random.sample(range(len(option_list)),opt_num_to_choose))
+					for j, chosen_option in enumerate(chosen_option_list):
+						option_list[chosen_option].click() #click the random option
+						chosen_option_list[j]+=1
+
+					#if we choose the 'other' option, we have to type something
+					try:
+						driver.find_element_by_class_name('i-a-c-q-t-q-b-b-b-textareas').find_element_by_xpath('.//textarea').send_keys('CaCha!')
+					except NoSuchElementException:
+						pass
+
 					driver.find_element_by_class_name('i-a-c-f-b-submit-btn').click() #click 'confirm'
-					print('{{{'+str(datetime.now().time())[:8]+'}}} answered',chose_option+1, 'to a question successfully')
+					print('{{{'+str(datetime.now().time())[:8]+'}}} answered',', '.join(map(str,chosen_option_list)), 'to a question successfully')
 					driver.get(url)
 				except NoSuchElementException: #if there are no unanswered questions
 					pass
