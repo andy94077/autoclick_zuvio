@@ -58,7 +58,7 @@ options = webdriver.ChromeOptions()
 options.add_argument('--headless') #hide the browser window
 driver = webdriver.Chrome(chrome_options= options)
 
-driver.get(url)
+driver.get('https://irs.zuvio.com.tw')
 signal.signal(signal.SIGINT, sig_int)
 
 login = False
