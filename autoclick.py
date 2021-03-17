@@ -25,14 +25,15 @@ def color_str(s, color):
     return s
 
 
-def setup():
+def parse_args():
     parser = argparse.ArgumentParser(description='a python script that answers multiple choices questions automatically on irs.zuvio.com.tw')
     parser.add_argument('url')
     parser.add_argument('-s', '--seconds', type=int, default=3, help='refresh the website every SECONDS seconds (default: %(default)s)')
-    parser.add_argument('--no-sign-in', action='store_true', help='the script will not try to sign in the course')
+    parser.add_argument('--no-sign-in', action='store_true', help='The script will not try to sign in the course')
     parser.add_argument('-g', '--gps', action='store_true', help='enable gps. Enabling gps feature will open the browser window.')
+    parser.add_argument('-k', '--keep-signing-in', action='store_true', help='The program will keep trying to sign in even it has signed in.')
     args = parser.parse_args()
-    return args.seconds, not args.no_sign_in, args.url, args.gps
+    return args
 
 
 def login(driver):
@@ -57,7 +58,12 @@ def login(driver):
 
 
 if __name__ == '__main__':
-    sec, need_sign_in, url, gps = setup()
+    args = parse_args()
+    sec = args.seconds
+    need_sign_in = not args.no_sign_in
+    url = args.url
+    gps = args.gps
+    keep_signing_in = args.keep_signing_in
 
     options = webdriver.ChromeOptions()
     if gps:
@@ -76,13 +82,13 @@ if __name__ == '__main__':
     signed_in = not need_sign_in
     sign_in_url = url.replace('clickers', 'rollcall')
     while True:
-        if not signed_in:
+        if keep_signing_in or not signed_in:
             driver.get(sign_in_url)
             time.sleep(sec)
             try:
                 driver.find_element_by_id('submit-make-rollcall').click()
                 print(f'[{str(datetime.now().time())[:8]}] {color_str("signed in", "g")}')
-                print('\a')
+                print('\a', end='')
                 signed_in = True
                 driver.get(url)
                 time.sleep(3)
