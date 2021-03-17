@@ -24,6 +24,7 @@ def color_str(s, color):
         return f'\033[1;{cmap[color]}m{s}\033[0m'
     return s
 
+
 def setup():
     parser = argparse.ArgumentParser(description='a python script that answers multiple choices questions automatically on irs.zuvio.com.tw')
     parser.add_argument('url')
@@ -59,7 +60,8 @@ if __name__ == '__main__':
 
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')  # hide the browser window
-    driver = webdriver.Chrome(chrome_options=options)
+    options.add_argument("--log-level=3")  # only show fatal messages
+    driver = webdriver.Chrome(options=options)
 
     signal.signal(signal.SIGINT, sig_int)
 
