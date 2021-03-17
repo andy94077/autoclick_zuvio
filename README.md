@@ -18,9 +18,18 @@ autoclick - a python script that answers multiple choices questions automaticall
 
 ## Usage
 ```
-Usage: python3 autoclick.py [url] [-n seconds]
-Options:
-  -n  SECONDS        refresh the website every SECONDS seconds (default: 3)
-  --no-sign-in       the script will not try to sign in the course
+usage: autoclick.py [-h] [-s SECONDS] [--no-sign-in] url
+
+a python script that answers multiple choices questions automatically on
+irs.zuvio.com.tw
+
+positional arguments:
+  url
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s SECONDS, --seconds SECONDS
+                        refresh the website every SECONDS seconds (default: 3)
+  --no-sign-in          the script will not try to sign in the course
 ```
 The usage of `autoclick_server.py` is the same as `autoclick.py`.
