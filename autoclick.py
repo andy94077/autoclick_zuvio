@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import getopt
+import os
 import argparse
 import getpass
 import signal
@@ -20,7 +20,7 @@ def sig_int(signal, frame):
 
 def color_str(s, color):
     cmap = {'g': '32', 'green': '32', 'r': '31', 'red': '31'}
-    if color in cmap:
+    if color in cmap and 'TERM' in os.environ:
         return f'\033[1;{cmap[color]}m{s}\033[0m'
     return s
 
@@ -30,8 +30,9 @@ def setup():
     parser.add_argument('url')
     parser.add_argument('-s', '--seconds', type=int, default=3, help='refresh the website every SECONDS seconds (default: %(default)s)')
     parser.add_argument('--no-sign-in', action='store_true', help='the script will not try to sign in the course')
+    parser.add_argument('-g', '--gps', action='store_true', help='enable gps. Enabling gps feature will open the browser window.')
     args = parser.parse_args()
-    return args.seconds, not args.no_sign_in, args.url
+    return args.seconds, not args.no_sign_in, args.url, args.gps
 
 
 def login(driver):
@@ -56,16 +57,20 @@ def login(driver):
 
 
 if __name__ == '__main__':
-    sec, need_sign_in, url = setup()
+    sec, need_sign_in, url, gps = setup()
 
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')  # hide the browser window
+    if gps:
+        options.add_experimental_option('prefs', {'geolocation': True})
+    else:
+        options.add_argument('--headless')  # hide the browser window
     options.add_argument("--log-level=3")  # only show fatal messages
     driver = webdriver.Chrome(options=options)
 
     signal.signal(signal.SIGINT, sig_int)
 
     login(driver)
+
     driver.get(url)
 
     signed_in = not need_sign_in
@@ -77,6 +82,7 @@ if __name__ == '__main__':
             try:
                 driver.find_element_by_id('submit-make-rollcall').click()
                 print(f'[{str(datetime.now().time())[:8]}] {color_str("signed in", "g")}')
+                print('\a')
                 signed_in = True
                 driver.get(url)
                 time.sleep(3)
