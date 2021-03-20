@@ -29,8 +29,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description='a python script that answers multiple choices questions automatically on irs.zuvio.com.tw')
     parser.add_argument('url')
     parser.add_argument('-s', '--seconds', type=int, default=3, help='refresh the website every SECONDS seconds (default: %(default)s)')
-    parser.add_argument('--no-sign-in', action='store_true', help='The script will not try to sign in the course')
+    parser.add_argument('--no-sign-in', dest='need_sign_in', action='store_false', help='The script will not try to sign in the course')
     parser.add_argument('-g', '--gps', action='store_true', help='enable gps. Enabling gps feature will open the browser window.')
+    parser.add_argument('-l', '--gps-location', type=float, nargs=2, default=[25.0188305, 121.5367037], metavar=('latitude', 'longtitude'), help='gps location.')
     parser.add_argument('-k', '--keep-signing-in', action='store_true', help='The program will keep trying to sign in even it has signed in.')
     args = parser.parse_args()
     return args
@@ -59,14 +60,9 @@ def login(driver):
 
 if __name__ == '__main__':
     args = parse_args()
-    sec = args.seconds
-    need_sign_in = not args.no_sign_in
-    url = args.url
-    gps = args.gps
-    keep_signing_in = args.keep_signing_in
 
     options = webdriver.ChromeOptions()
-    if gps:
+    if args.gps:
         options.add_experimental_option('prefs', {'geolocation': True})
     else:
         options.add_argument('--headless')  # hide the browser window
@@ -77,20 +73,27 @@ if __name__ == '__main__':
 
     login(driver)
 
-    driver.get(url)
+    driver.get(args.url)
 
-    signed_in = not need_sign_in
-    sign_in_url = url.replace('clickers', 'rollcall')
+    signed_in = not args.need_sign_in
+    sign_in_url = args.url.replace('clickers', 'rollcall')
     while True:
-        if keep_signing_in or not signed_in:
+        if args.keep_signing_in or not signed_in:
             driver.get(sign_in_url)
-            time.sleep(sec)
+            if args.gps:
+                driver.execute_cdp_cmd("Emulation.setGeolocationOverride", {
+                    'latitude': args.gps_location[0],
+                    'longitude': args.gps_location[1],
+                    'accuracy': 150
+                })
+
+            time.sleep(args.seconds)
             try:
                 driver.find_element_by_id('submit-make-rollcall').click()
                 print(f'[{str(datetime.now().time())[:8]}] {color_str("signed in", "g")}')
                 print('\a', end='')
                 signed_in = True
-                driver.get(url)
+                driver.get(args.url)
                 time.sleep(3)
             except NoSuchElementException:
                 pass
@@ -100,7 +103,7 @@ if __name__ == '__main__':
             print(f'[{str(datetime.now().time())[:8]}] {color_str("connection timeout", "r")}')
             time.sleep(30)
             continue
-        time.sleep(sec)
+        time.sleep(args.seconds)
 
         # find some available questions
         questions_n = len(driver.find_elements_by_class_name("i-c-l-q-question-box"))
@@ -134,6 +137,6 @@ if __name__ == '__main__':
 
                         driver.find_element_by_class_name('i-a-c-f-b-submit-btn').click()  # click 'confirm'
                         print('{{{' + str(datetime.now().time())[:8] + '}}} answered', ', '.join(map(str, chosen_option_list)), 'to a question successfully')
-                        driver.get(url)
+                        driver.get(args.url)
                     except NoSuchElementException:  # if there are no unanswered questions
                         pass
