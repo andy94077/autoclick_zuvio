@@ -45,10 +45,10 @@ def login(driver):
     while not logged_in:
         driver.find_element_by_id('email').send_keys(email)
         driver.find_element_by_id('password').send_keys(password)
-        driver.find_element_by_id('login_btn').click()
+        driver.find_element_by_id('login-btn').click()
         driver.implicitly_wait(1)
         try:
-            driver.find_element_by_id('login_btn')
+            driver.find_element_by_id('login-btn')
         except NoSuchElementException:  # if it does not exist the login button, which means you have logged in
             logged_in = True
         else:
