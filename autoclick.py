@@ -6,7 +6,6 @@ import random
 import re
 import signal
 import time
-from datetime import datetime
 
 from dotenv import load_dotenv
 from selenium import webdriver
@@ -38,7 +37,7 @@ def parse_args():
     parser.add_argument('-g', '--gps', action='store_true', help='enable gps. Enabling gps feature will open the browser window.')
     parser.add_argument('-l', '--gps-location', type=float, nargs=2, default=[25.0188305, 121.5367037], metavar=('latitude', 'longtitude'), help='gps location.')
     parser.add_argument('-k', '--keep-signing-in', action='store_true', help='The program will keep trying to sign in even it has signed in.')
-    parser.add_argument('-m', '--mail', default=False, help='send email to notify you when signed in (default: the email you logged in). Note that only the old ntu mail (<= 108) is supported.')
+    parser.add_argument('-m', '--mail', nargs='+', default=False, help='send email to notify you when signed in (default: the email you logged in). Note that only the old ntu mail (<= 108) is supported.')
     parser.add_argument('-q', '--question', action='store_true', help='answer the question randomly')
     args = parser.parse_args()
     return args
@@ -47,7 +46,7 @@ def parse_args():
 def get_callbacks(args):
     callbacks = []
     if args.mail:
-        callbacks.append(Mail(sender=args.mail, receiver=args.mail))
+        callbacks.append(Mail(sender=args.mail[0], receivers=args.mail))
     return callbacks
 
 
@@ -117,7 +116,10 @@ if __name__ == '__main__':
                 print('\a', end='')
                 signed_in = True
                 for callback in callbacks:
-                    callback(logger)
+                    try:
+                        callback(logger)
+                    except:
+                        pass
                 driver.get(args.url)
                 time.sleep(3)
             except NoSuchElementException:
