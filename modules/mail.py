@@ -5,7 +5,7 @@ import smtplib
 import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, List, Literal, Union
 
 from dotenv import load_dotenv
 
@@ -15,9 +15,9 @@ load_dotenv()
 class Mail():
     SERVER = {'ntu': 'mail.ntu.edu.tw', 'gmail': 'smtp.gmail.com', 'other': 'xxx'}
 
-    def __init__(self, sender: str, receiver: str, mail_server_type: Literal['ntu', 'gmail', 'other', None] = None, mail_server: Union[str, None] = None, port: str = '587'):
+    def __init__(self, sender: str, receivers: Union[str, List[str]], mail_server_type: Literal['ntu', 'gmail', 'other', None] = None, mail_server: Union[str, None] = None, port: str = '587'):
         self.sender = sender
-        self.receiver = receiver
+        self.receiver = receivers if isinstance(receivers, str) else ', '.join(receivers)
         self.subject = 'Auto click on Zuvio: signed in class {class_no}'
         if mail_server_type is None:
             if re.match('.+@ntu\.edu\.tw$', sender):
